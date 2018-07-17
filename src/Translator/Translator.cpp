@@ -1,14 +1,19 @@
 //
 //  main.cpp
-//  cctest
 //
-//  Created by LamSam on 6/6/2017.
+//  Created by Sam Lam on 6/6/2017.
 //  Copyright © 2017年 LamSam. All rights reserved.
 //
 
 
 #include "Translator.hpp"
 #include "Codec.hpp"
+
+#include <fstream>
+#include <algorithm>
+#include <iterator>
+
+#include <boost/regex.hpp>
 
 void Translator::setMode(string mode) {
     this->mode = mode;
@@ -40,8 +45,8 @@ void Translator::readFile() {
     string code = c.detect(inputFilePath);
     if(code != "UTF-8") {
         if(c.convertToUTF8(inputFilePath, code) != 0) {
-            cout << "Error in code transfrom" << endl;
-            exit(0);
+            //cout << "Error in code transfrom" << endl;
+            exit(-1);
         }
     }
     
@@ -154,28 +159,24 @@ void Translator::writeASS() {
     fstream output;
     output.open(outputFilePath, ios::out);
     
-    output << "[Script Info]" << '\r' << endl;
-    vector<ASSContent*> contents = (ass->getContents())["Script Info"];
-    for(int i = 0; i < contents.size(); i++)
-        output << contents[i]->toString() << endl;
-    output << '\r' << endl;
+    unsigned char bom[] = { 0xEF,0xBB,0xBF };
+    output.write((char*)bom, sizeof(bom));
     
-    output << "[Aegisub Project Garbage]" << '\r' << endl;
-    contents = (ass->getContents())["Aegisub Project Garbage"];
-    for(int i = 0; i < contents.size(); i++)
-        output << contents[i]->toString() << endl;
-    output << '\r' << endl;
-    
-    output << "[V4+ Styles]" << '\r' << endl;
-    contents = (ass->getContents())["V4+ Styles"];
-    for(int i = 0; i < contents.size(); i++)
-        output << contents[i]->toString() << endl;
-    output << '\r' << endl;
-    
-    output << "[Events]" << '\r' << endl;
-    contents = (ass->getContents())["Events"];
-    for(int i = 0; i < contents.size(); i++)
-        output << contents[i]->toString() << endl;
+    vector<ASSContent *> sections = ass->getContents();
+    for_each(sections.begin(),
+             next(sections.begin(), sections.size()),
+             [&output](ASSContent *section) {
+                 output << section->toString() << '\r' << endl;
+                 vector<ASSContent *> contents = section->getContents();
+                 for_each(contents.begin(),
+                          next(contents.begin(), contents.size()),
+                          [&output](ASSContent *content) {
+                              output << content->toString() << endl;
+                          }
+                 );
+                 output << '\r' << endl;
+             }
+    );
     
     output.close();
 }
@@ -187,13 +188,12 @@ int Translator::translateASS() {
     string line;
     boost::regex reg { "({[^}]*})" };
     boost::smatch found;
-    vector<ASSContent*> contents = (ass->getContents())["Events"];
+    vector<ASSContent*> contents = ass->getContent("Events");
     for(int i = 0; i != contents.size(); i++) {
         ASSEventContent *content = (ASSEventContent *)contents[i];
         
-        if(content->tag != "Dialogue") {
+        if(content->tag != "Dialogue")
             continue;
-        }
         
         // cut the timecode and information part of dialogue statement
         if(checkGojuon(content->text) ||
@@ -252,8 +252,4 @@ void Translator::translate() {
         translateTXT();
     else
         return;
-}
-
-void Translator::dump() {
-    cout << mode << " " << config << " " << inputFilePath << " " << outputFilePath << endl;
 }

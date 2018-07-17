@@ -1,6 +1,5 @@
 //
 //  translator.hpp
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.
@@ -11,13 +10,6 @@
 
 #include <opencc/opencc.h>
 #include <opencc/SimpleConverter.hpp>
-
-#include <boost/regex.hpp>
-
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
 
 #include "ASSParser.hpp"
 
@@ -31,7 +23,6 @@ public:
     void setInputFilePath(string inputFilePath);
     void setOutputFilePath(string outputFilePath);
     void setIsGBK(string isGBK);
-    void dump();
     
 private:
     opencc::SimpleConverter *sc;
@@ -63,7 +54,6 @@ private:
         u8"ゲ", u8"ゼ", u8"デ", u8"ベ", u8"ペ",
         u8"ゴ", u8"ゾ", u8"ド", u8"ボ", u8"ポ"
     };
-    map<string, map<string, string>> inputContent;
     vector<string> splitString(string &str, string &sym);
     string hasEffect(string &line);
     bool checkGojuon(string &line);
