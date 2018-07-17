@@ -1,6 +1,5 @@
 //
 //  Codec.cpp
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.
@@ -10,7 +9,6 @@
 
 #include <uchardet/uchardet.h>
 
-#include <iostream>
 #include <fstream>
 #include <codecvt>
 
@@ -27,7 +25,6 @@ namespace conv {
 #define BUFFER_SIZE 4096
 
 char *fileToBytes(string &path, long &size, size_t offset) {
-    cout << offset << " " << path;
     FILE *f = fopen(path.c_str(), "rb");
     fseek(f, 0, SEEK_END);
     size = ftell(f) - offset;
@@ -56,16 +53,16 @@ string Codec::detect(string path) {
     FILE *f = fopen(path.c_str(), "r");
     if(f == NULL) { return string("Cannot open file"); }
 
-    string result = checkFromMap(f);
+    string result = checkFromBOM(f);
     if(result != "")
         return result;
 
-    result = checkFromLib(f);
+    result = checkFromSta(f);
 
     return result;
 }
 
-string Codec::checkFromMap(FILE *f) {
+string Codec::checkFromBOM(FILE *f) {
     for(map<string, vector<char>>::iterator it = codes.begin(); it != codes.end(); it++) {
         const size_t size = (it->second).size();
         char header[5] = {0};
@@ -77,7 +74,7 @@ string Codec::checkFromMap(FILE *f) {
     return "";
 }
 
-string Codec::checkFromLib(FILE *f) {
+string Codec::checkFromSta(FILE *f) {
     char buffer[BUFFER_SIZE];
     fseek(f, 0, SEEK_SET);
     uchardet_t handle = uchardet_new();
@@ -103,12 +100,10 @@ string Codec::checkFromLib(FILE *f) {
 }
 
 int Codec::convertToUTF8(string &path, string &fromCode) {
-    cout << fromCode << endl;
     conv::iconv_t cv = conv::iconv_open("UTF-8", fromCode.c_str());
-    if(cv == (conv::iconv_t)-1) {
-        cout << "Fail to convert UTF-8 from " << fromCode << endl;
+    if(cv == (conv::iconv_t)-1)
+//        cout << "Fail to convert UTF-8 from " << fromCode << endl;
         return -1;
-    }
 
     long fsize;
     char *content = fileToBytes(path, fsize, codes[fromCode].size());
@@ -121,10 +116,9 @@ int Codec::convertToUTF8(string &path, string &fromCode) {
     char* out_buf_ptr = out_buf_start;
     
     int rc = conv::iconv(cv, &content, &in_bytes_left, &out_buf_ptr, &out_bytes_left);
-    if(rc == -1) {
-        cout << "Error" << endl;
+    if(rc == -1)
         return -1;
-    }
+
     conv::iconv_close(cv);
     
     byteToFile(path, out_buf_start, fsize * 3 + 1 - out_bytes_left);

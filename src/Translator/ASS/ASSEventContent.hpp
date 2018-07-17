@@ -1,6 +1,5 @@
 //
 //  ASSEventContent.h
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.

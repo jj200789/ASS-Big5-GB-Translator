@@ -1,6 +1,5 @@
 //
 //  ASSContent.hpp
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.
@@ -24,11 +23,16 @@ public:
     string line;
     string tag;
     string content;
-    virtual void setContent(string &line) {};
-    virtual string toString() { return line; };
+    vector<ASSContent *> getContents() { return contents; };
+    virtual void setContent(string &line) { this->line = line; };
+    virtual string toString() { return "[" + line + "]" ; };
+    virtual void addASSContent(ASSContent *assContent) {
+        contents.push_back(assContent);
+    }
 
 protected:
     ASSContentType type;
+    vector<ASSContent *> contents;
     vector<string> commonProcess(string &line) {
         this->line = line;
         if(line[0] == ';') {
@@ -53,24 +57,6 @@ protected:
             containor.push_back(str.substr(pos1));
         return containor;
     };
-    
-    string trim(string &str, string &sym) {
-        if (str.empty())
-            return str;
-        str.erase(0, str.find_first_not_of(sym));
-        str.erase(str.find_last_not_of(sym) + 1);
-        return str;
-    }
-    
-    string trim(string &str, vector<string> &syms) {
-        if (str.empty())
-            return str;
-        for(string sym : syms) {
-            str.erase(0, str.find_first_not_of(sym));
-            str.erase(str.find_last_not_of(sym) + 1);
-        }
-        return str;
-    }
 };
 
 class ASSCommonContent: public ASSContent {

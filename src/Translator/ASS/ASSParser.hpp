@@ -1,6 +1,5 @@
 //
 //  ASSParser.hpp
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.
@@ -18,9 +17,14 @@ using namespace std;
 class ASSParser {
 public:
     void parse(string &path);
-    map<string, vector<ASSContent*>> getContents();
+    vector<ASSContent *> getContents();
+    vector<ASSContent *> getContent(string &section);
+    vector<ASSContent *> getContent(const char *section);
 private:
-    map<string, vector<ASSContent*>> contents;
+    ASSContent *currentSection;
+    map<string, int> sectionMap;
+    vector<ASSContent *> contents;
+    void addSection(string &section);
 };
 
 #endif /* ASSParser_hpp */

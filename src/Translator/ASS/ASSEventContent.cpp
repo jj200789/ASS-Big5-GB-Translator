@@ -1,13 +1,11 @@
 //
 //  ASSEventContent.cpp
-//  qqq
 //
 //  Created by Sam Lam on 15/7/2018.
 //  Copyright © 2018 LamSam. All rights reserved.
 //
 
 #include "ASSContent.hpp"
-#include <iostream>
 
 void ASSEventContent::setContent(string &line) {
     vector<string> temp = commonProcess(line);
