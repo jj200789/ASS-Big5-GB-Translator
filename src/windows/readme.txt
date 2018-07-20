@@ -1,1 +1,1 @@
-Please download boost by yourself.
+Please download boost header by yourself.
